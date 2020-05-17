@@ -21,7 +21,7 @@ curl -X POST \
 --data-raw 'console.log(Deno)'
 ```
 
-##### `<BASE_URL>/api/fmt`
+##### POST /api/fmt
 Format deno source code, and get formatted result back.
 
 ```
