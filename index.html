@@ -1,20 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Deno Playground</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-normalize@0.6.0/modern-normalize.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap">
+  <style>
+    html,
+    body,
+    .wrapper {
+      height: 100%;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main {
+      flex: 2;
+      display: flex;
+    }
+
+    .main>.code {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+    }
+
+    .code::before {
+      content: "wrapper";
+      text-transform: uppercase;
+      left: 0px;
+      position: absolute;
+      top: -18px;
+      font-size: 16px;
+      color: red;
+    }
+
+    .code-area {
+      font-family: 'Inconsolata', monospace;
+      background-color: #ffffea;
+      height: 100%;
+      width: calc(100% - 32px);
+      border: none;
+      padding: 10px;
+      line-height: 1.5;
+      word-break: break-all;
+      resize: none;
+      overflow-wrap: normal;
+      overflow-x: auto;
+      white-space: pre;
+      font-size: 16px;
+    }
+
+    .code-area:focus {
+      outline: none;
+    }
+
+    .code-area#script-output {
+      width: 100%;
+      background-color: #FCFDCE;
+    }
+  </style>
 </head>
+
 <body>
-  <div>
-    <textarea id="source-input"></textarea>
-  </div>
-  <div>
-    <textarea id="script-output"></textarea>
+  <div class="wrapper">
+    <!-- <div class="header">
+      <a class="heading" href="">Deno Playground</a>
+      <ul class="menu-list">
+        <li class="menu-item pure-menu-selected"><a href="#" class="menu-link">Home</a></li>
+        <li class="menu-item"><a href="#" class="menu-link">Tour</a></li>
+        <li class="menu-item"><a href="#" class="menu-link">Sign Up</a></li>
+      </ul>
+    </div> -->
+    <div class="main">
+      <div class="code">
+        <div class="code-ln"><span>1</span></div>
+        <textarea id="source-input" class="code-area"></textarea>
+      </div>
+      <div class="code output">
+        <textarea id="script-output" class="code-area"></textarea>
+      </div>
+    </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/behave-js@1.5.0/behave.min.js"></script>
   <script>
     let editor;
+    BehaveHooks.add(['keydown'], data => {
+      const numLines = data.lines.total;
+      const house = document.getElementsByClassName('code-ln')[0];
+      let html = '';
+      for (let i = 0; i < numLines; i++) {
+        html += '<div>' + (i + 1) + '</div>';
+      }
+      house.innerHTML = html;
+    });
     document.addEventListener('DOMContentLoaded', () => {
       editor = new Behave({
         textarea: document.getElementById('source-input'),
@@ -32,4 +116,5 @@
     });
   </script>
 </body>
+
 </html>
