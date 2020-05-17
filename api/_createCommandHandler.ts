@@ -28,18 +28,18 @@ export default function createCommandHandler(
     const source = Base64.fromBase64String(body).toString();
     const cmd = ["deno", commandType];
     if (qs.unstable) cmd.push("--unstable");
-    if (commandType === 'fmt') {
-      cmd.push('-')
+    if (commandType === "fmt") {
+      cmd.push("-");
     } else {
       cmd.push(source);
     }
     const executor = Deno.run({
       cmd,
-      stdin: 'piped',
+      stdin: "piped",
       stdout: "piped",
       stderr: "piped",
     });
-    if (commandType === 'fmt') {
+    if (commandType === "fmt") {
       const encoder = new TextEncoder();
       await executor.stdin?.write(encoder.encode(source));
       executor.stdin?.close();
