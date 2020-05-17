@@ -63,7 +63,7 @@ export default function createCommandHandler(
         body: outputString,
       };
     } catch (e) {
-      // Deno.kill(executor.pid, Deno.Signal.SIGTERM)
+      Deno.kill(executor.pid, Deno.Signal.SIGTERM)
       console.error(e);
       return {
         statusCode: 500,
