@@ -27,10 +27,11 @@ export default function createCommandHandler(
     const qs = decodeQueryString(queryString || "");
     const source = Base64.fromBase64String(body).toString();
     const cmd = ["deno", commandType];
-    if (qs.unstable) cmd.push("--unstable");
     if (commandType === "fmt") {
       cmd.push("-");
     } else {
+      if (qs.ts) cmd.push("--ts");
+      if (qs.unstable) cmd.push("--unstable");
       cmd.push(source);
     }
     const executor = Deno.run({
