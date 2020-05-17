@@ -7,7 +7,29 @@
 </head>
 <body>
   <div>
-    <pre>// TODO</pre>
+    <textarea id="source-input"></textarea>
   </div>
+  <div>
+    <textarea id="script-output"></textarea>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/behave-js@1.5.0/behave.min.js"></script>
+  <script>
+    let editor;
+    document.addEventListener('DOMContentLoaded', () => {
+      editor = new Behave({
+        textarea: document.getElementById('source-input'),
+        replaceTab: true,
+        softTabs: false,
+        tabSize: 2,
+        autoOpen: true,
+        overwrite: true,
+        autoStrip: true,
+        autoIndent: true,
+      });
+    });
+    document.addEventListener('beforeunload', () => {
+      editor && editor.close();
+    });
+  </script>
 </body>
 </html>
