@@ -2,12 +2,16 @@
   "functions": {
     "api/**/*.ts": {
       "runtime": "now-deno@0.4.0",
-      "memory": 128
+      "memory": 1024
     }
   },
   "env": {
-    "DENO_VERSION": "latest",
-    "DENO_UNSTABLE": "true"
+    "DENO_VERSION": "latest"
+  },
+  "build": {
+    "env": {
+      "DENO_UNSTABLE": "true"
+    }
   },
   "regions": ["sin1"]
 }
