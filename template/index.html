@@ -111,6 +111,7 @@
     .main>.code {
       flex: 1;
       display: flex;
+      max-height: 50%;
       flex-direction: row;
       margin: 0;
       border-right: none;
@@ -194,13 +195,13 @@
         </li>
         <li>
           <label for="enable-unstable">
-            <input type="checkbox" id="enable-unstable" name="enableUnstable">
+            <input type="checkbox" id="enable-unstable" name="enableUnstable" {{isUnstableTemplateMark}}>
             <span>Use unstable features</span>
           </label>
         </li>
         <li>
           <label for="enable-typescript">
-            <input type="checkbox" id="enable-typescript" name="enableTypescript" checked>
+            <input type="checkbox" id="enable-typescript" name="enableTypescript" {{isTypescriptTemplateMark}}>
             <span>Use typescript</span>
           </label>
         </li>
@@ -212,7 +213,7 @@
     <div class="main">
       <div class="code">
         <div class="code-ln"><span>1</span></div>
-        <textarea id="source-input" class="code-area"></textarea>
+        <textarea id="source-input" class="code-area">{{source}}</textarea>
       </div>
       <div class="code output">
         <textarea id="script-output" class="code-area" readonly></textarea>
@@ -338,18 +339,6 @@
 
     if (isUnstable) document.getElementById('enable-unstable').checked = true;
     if (isTypescript) document.getElementById('enable-typescript').checked = true;
-
-    if (isLoadMode) {
-      const sourceId = urlParams.get('id');
-      source.value = `Fetching source id ${sourceId} ...`;
-      getExistingCode(sourceId)
-        .then(result => {
-          source.value = result;
-        }).catch(err => {
-          alert(`Cannot fetch source id ${sourceId}: ${err.message}`);
-          source.value = '';
-        });
-    }
 
     document.addEventListener('DOMContentLoaded', () => {
       editor = new Behave({

@@ -2,7 +2,8 @@
   "functions": {
     "api/**/*.ts": {
       "runtime": "now-deno@0.4.0",
-      "memory": 1024
+      "memory": 1024,
+      "includeFiles": "template/**"
     }
   },
   "env": {
@@ -13,5 +14,11 @@
       "DENO_UNSTABLE": "true"
     }
   },
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/api"
+    }
+  ],
   "regions": ["sin1"]
 }
