@@ -203,6 +203,7 @@
       }
       return fetch(`/api/${command}`, requestOptions)
         .then(response => {
+          target.value = '';
           if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
           return response.text();
         });
