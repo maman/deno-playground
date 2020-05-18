@@ -192,6 +192,7 @@
     });
 
     function performRequest(command, body) {
+      target.value = '';
       const headers = new Headers();
       headers.append('Content-Type', 'application/javascript');
       const requestOptions = {
