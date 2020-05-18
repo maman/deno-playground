@@ -131,6 +131,7 @@ const template = `
       .main>.code {
         border-right: 1px solid rgba(0, 0, 0, .3);
         border-bottom: none;
+        max-height: 100%;
       }
     }
 
