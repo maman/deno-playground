@@ -2,8 +2,7 @@
   "functions": {
     "api/**/*.ts": {
       "runtime": "now-deno@0.4.0",
-      "memory": 1024,
-      "includeFiles": "template/**"
+      "memory": 1024
     }
   },
   "env": {
