@@ -192,7 +192,7 @@
     });
 
     function performRequest(command, body) {
-      target.value = '';
+      target.value = 'Waiting for Remote server ...';
       const headers = new Headers();
       headers.append('Content-Type', 'application/javascript');
       const requestOptions = {
@@ -209,7 +209,6 @@
     }
 
     function format() {
-      target.value = 'Waiting for Remote server ...';
       performRequest('fmt', source.value)
         .then(result => {
           source.value = result;
@@ -225,7 +224,6 @@
       const shouldEnableTypescript = !!document.querySelector('#enable-typescript:checked');
       if (shouldEnableUnstable) queries.push('unstable=1');
       if (shouldEnableTypescript) queries.push('typescript=1');
-      target.value = 'Waiting for Remote server ...';
       performRequest(queries.length ? `eval?${queries.join('&')}` : 'eval', source.value)
         .then(result => {
           target.value = result;
