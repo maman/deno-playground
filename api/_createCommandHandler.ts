@@ -2,8 +2,7 @@ import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Base64,
-  decodeQueryString,
-} from "./_deps.ts";
+} from "../deps.ts";
 
 const beforeTimeout = (promise: Promise<any>, timeout: number = 0) => {
   const error = "Timeout occured before promise was resolved";
@@ -24,14 +23,14 @@ export default function createCommandHandler(
     const { method, body, path } = JSON.parse(evtBody || "{}");
     if (method !== "POST") return { statusCode: 500, body: "Not supported" };
     const [_, queryString] = path.split("?");
-    const qs = decodeQueryString(queryString || "");
+    const qs = new URLSearchParams(queryString || "");
     const source = Base64.fromBase64String(body).toString();
     const cmd = ["deno", commandType];
     if (commandType === "fmt") {
       cmd.push("-");
     } else {
-      if (qs.ts) cmd.push("--ts");
-      if (qs.unstable) cmd.push("--unstable");
+      if (qs.has("ts")) cmd.push("--ts");
+      if (qs.has("unstable")) cmd.push("--unstable");
       cmd.push(source);
     }
     const executor = Deno.run({
@@ -46,6 +45,7 @@ export default function createCommandHandler(
       executor.stdin?.close();
     }
     try {
+      // @ts-ignore
       const { code } = await beforeTimeout(
         executor.status(),
         parseInt(Deno.env.get("SCRIPT_EXECUTION_TIMEOUT") || "3000", 10),
@@ -64,7 +64,7 @@ export default function createCommandHandler(
         body: outputString,
       };
     } catch (e) {
-      Deno.kill(executor.pid, Deno.Signal.SIGTERM)
+      Deno.kill(executor.pid, Deno.Signal.SIGTERM);
       console.error(e);
       return {
         statusCode: 500,
