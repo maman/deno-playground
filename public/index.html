@@ -71,6 +71,14 @@
       color: #FFFFFF
     }
 
+    .menu-list #share-text {
+      display: none;
+    }
+
+    .menu-list #share-text.show {
+      display: inline-block;
+    }
+
     .main {
       flex: 2;
       display: flex;
@@ -156,6 +164,10 @@
           <button id="format">Format</button>
         </li>
         <li>
+          <button id="share">Share</button>
+          <input type="text" id="share-text" value="">
+        </li>
+        <li>
           <label for="enable-unstable">
             <input type="checkbox" id="enable-unstable" name="enableUnstable">
             <span>Use unstable features</span>
@@ -183,10 +195,17 @@
   <script>
     let editor;
     let prevNumLines;
+    const API_URL = '/api';
     const source = document.getElementById('source-input');
     const target = document.getElementById('script-output');
+    const shareTarget = document.getElementById('share-text');
     const evalBtn = document.getElementById('eval');
     const formatBtn = document.getElementById('format');
+    const shareBtn = document.getElementById('share');
+    const urlParams = new URLSearchParams(window.location.search);
+    const isTypescript = urlParams.has('typescript');
+    const isUnstable = urlParams.has('unstable');
+    const isLoadMode = urlParams.has('id');
 
     BehaveHooks.add(['keydown'], data => {
       const numLines = data.lines.total;
@@ -201,7 +220,7 @@
       }
     });
 
-    function performRequest(command, body) {
+    function performInterpreterRequest(command, body) {
       target.value = 'Waiting for Remote server ...';
       const headers = new Headers();
       headers.append('Content-Type', 'application/javascript');
@@ -211,7 +230,7 @@
         method: 'POST',
         redirect: 'follow',
       }
-      return fetch(`/api/${command}`, requestOptions)
+      return fetch(`${API_URL}/${command}`, requestOptions)
         .then(response => {
           target.value = '';
           if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -219,8 +238,26 @@
         });
     }
 
+    function getExistingCode(id) {
+      return fetch(`${API_URL}/share?id=${id}`)
+        .then(response => {
+          if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+          return response.text();
+        })
+    }
+
+    function getShareId(code) {
+      return fetch(`${API_URL}/share`, {
+        method: 'POST',
+        body: code,
+      }).then(response => {
+        if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+        return response.text();
+      })
+    }
+
     function format() {
-      performRequest('fmt', source.value)
+      performInterpreterRequest('fmt', source.value)
         .then(result => {
           source.value = result;
         })
@@ -235,7 +272,7 @@
       const shouldEnableTypescript = !!document.querySelector('#enable-typescript:checked');
       if (shouldEnableUnstable) queries.push('unstable=1');
       if (shouldEnableTypescript) queries.push('typescript=1');
-      performRequest(queries.length ? `eval?${queries.join('&')}` : 'eval', source.value)
+      performInterpreterRequest(queries.length ? `eval?${queries.join('&')}` : 'eval', source.value)
         .then(result => {
           target.value = result;
         })
@@ -244,10 +281,47 @@
         });
     }
 
+    function share() {
+      if (!source.value.trim().length) return;
+      getShareId(source.value)
+        .then(result => {
+          if (!shareTarget.classList.contains('show')) {
+            shareTarget.classList.add('show');
+          }
+          const urlParams = new URLSearchParams();
+          const isUnstable = !!document.querySelector('#enable-unstable:checked');
+          const isTypescript = !!document.querySelector('#enable-typescript:checked');
+          if (isUnstable) urlParams.append('unstable', 1);
+          if (isTypescript) urlParams.append('typescript', 1);
+          urlParams.append('id', result);
+          shareTarget.value = `${document.location.origin}?${urlParams.toString()}`;
+          shareTarget.select();
+        })
+        .catch(err => {
+          alert(`Cannot share code: ${err.message}`);
+          shareTarget.value = '';
+        })
+    }
+
+    if (isUnstable) document.getElementById('enable-unstable').checked = true;
+    if (isTypescript) document.getElementById('enable-typescript').checked = true;
+
+    if (isLoadMode) {
+      const sourceId = urlParams.get('id');
+      source.value = `Fetching source id ${sourceId} ...`;
+      getExistingCode(sourceId)
+        .then(result => {
+          source.value = result;
+        }).catch(err => {
+          alert(`Cannot fetch source id ${sourceId}: ${err.message}`);
+          source.value = '';
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       editor = new Behave({
         textarea: document.getElementById('source-input'),
-        replaceTab: false,
+        replaceTab: true,
         softTabs: false,
         tabSize: 2,
         autoOpen: true,
@@ -257,12 +331,14 @@
       });
       evalBtn.addEventListener('click', () => { eval() });
       formatBtn.addEventListener('click', () => { format() });
+      shareBtn.addEventListener('click', () => { share() });
     });
 
     document.addEventListener('beforeunload', () => {
       editor && editor.close();
       evalBtn.removeEventListener('click', () => { eval() });
       formatBtn.removeEventListener('click', () => { format() });
+      shareBtn.removeEventListener('click', () => { share() });
     });
   </script>
 </body>
