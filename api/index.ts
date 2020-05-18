@@ -25,6 +25,8 @@ export async function handler(
     if (qs.has("id")) {
       const loadedText = await getFromAPI(qs.get("id") || "");
       templateText = templateText.replace("{{source}}", loadedText);
+    } else {
+      templateText = templateText.replace("{{source}}", "");
     }
     return {
       headers: {

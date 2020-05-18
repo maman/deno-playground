@@ -291,7 +291,7 @@ const template = `
           source.value = result;
         })
         .catch(err => {
-          target.value = 'Cannot format code:\n' + err.message;
+          target.value = 'Cannot format code:\\n' + err.message;
         });
     }
 
@@ -306,7 +306,7 @@ const template = `
           target.value = result;
         })
         .catch(err => {
-          target.value = 'Cannot run code:\n' + err.message;
+          target.value = 'Cannot run code:\\n' + err.message;
         });
     }
 
