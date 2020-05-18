@@ -5,9 +5,14 @@ import {
   shortUUID,
 } from "../deps.ts";
 
+const SALT = Deno.env.get('a');
 const JSONBIN_USER = Deno.env.get("JSONBIN_USER") || "";
 const JSONBIN_TOKEN = Deno.env.get("JSONBIN_TOKEN") || "";
 const JSONBIN_URL = `https://jsonbin.org/${JSONBIN_USER}`;
+
+// export function generateShareKey(): string {
+  
+// }
 
 export async function getFromAPI(id: string): Promise<string> {
   return fetch(`${JSONBIN_URL}/${id}`, {
@@ -41,7 +46,11 @@ export async function storeToAPI(body: string): Promise<string> {
 export async function handler(
   { body: evtBody }: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
-  const { method, body, path } = JSON.parse(evtBody || "{}");
+  const { method, body, path, headers } = JSON.parse(evtBody || "{}");
+  if (headers['user-agent']?.includes('curl')) return {
+    statusCode: 500,
+    body: 'Cannot share text'
+  }
   if (method === "POST") {
     const source = Base64.fromBase64String(body).toString();
     return storeToAPI(source)
