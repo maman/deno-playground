@@ -105,7 +105,7 @@
       flex: 2;
       display: flex;
       flex-direction: column;
-      max-height: calc(100vh - 53px);
+      max-height: calc(100vh - 78px);
     }
 
     .main>.code {
@@ -140,10 +140,10 @@
       border: none;
       padding: 10px;
       line-height: 1.5;
-      word-break: break-all;
       resize: none;
       overflow-wrap: normal;
       overflow-x: auto;
+      word-wrap: normal;
       white-space: pre;
       font-size: 16px;
     }
@@ -331,7 +331,9 @@
     }
 
     function syncScroll(evt, target) {
-      target.scrollTop = evt.target.scrollTop;
+      requestAnimationFrame(() => {
+        target.scrollTop = evt.target.scrollTop;
+      });
     }
 
     if (isUnstable) document.getElementById('enable-unstable').checked = true;
