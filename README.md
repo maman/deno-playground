@@ -1,6 +1,6 @@
 ## Deno Playground
 
-<img width="1216" alt="image" src="https://user-images.githubusercontent.com/491458/82177260-1ab14c00-9903-11ea-8119-8dfe2764a7c9.png">
+<p align="center"><img width="1216" alt="image" src="https://user-images.githubusercontent.com/491458/82177260-1ab14c00-9903-11ea-8119-8dfe2764a7c9.png"></p>
 
 Deno playground scratchpad, inspired by golang's play.golang.org. Not yet feature-complete, and only available as API endpoints for now.
 
