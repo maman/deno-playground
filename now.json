@@ -13,5 +13,11 @@
       "DENO_UNSTABLE": "true"
     }
   },
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/api"
+    }
+  ],
   "regions": ["sin1"]
 }

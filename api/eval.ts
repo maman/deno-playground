@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "./_deps.ts";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "../deps.ts";
 import createCommandHandler from "./_createCommandHandler.ts";
 
 export async function handler(

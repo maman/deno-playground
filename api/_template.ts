@@ -1,3 +1,4 @@
+const template = `
 <!DOCTYPE html>
 <html lang="en">
 
@@ -111,6 +112,7 @@
     .main>.code {
       flex: 1;
       display: flex;
+      max-height: 50%;
       flex-direction: row;
       margin: 0;
       border-right: none;
@@ -129,6 +131,7 @@
       .main>.code {
         border-right: 1px solid rgba(0, 0, 0, .3);
         border-bottom: none;
+        max-height: 100%;
       }
     }
 
@@ -194,13 +197,13 @@
         </li>
         <li>
           <label for="enable-unstable">
-            <input type="checkbox" id="enable-unstable" name="enableUnstable">
+            <input type="checkbox" id="enable-unstable" name="enableUnstable" {{isUnstableTemplateMark}}>
             <span>Use unstable features</span>
           </label>
         </li>
         <li>
           <label for="enable-typescript">
-            <input type="checkbox" id="enable-typescript" name="enableTypescript" checked>
+            <input type="checkbox" id="enable-typescript" name="enableTypescript" {{isTypescriptTemplateMark}}>
             <span>Use typescript</span>
           </label>
         </li>
@@ -212,7 +215,7 @@
     <div class="main">
       <div class="code">
         <div class="code-ln"><span>1</span></div>
-        <textarea id="source-input" class="code-area"></textarea>
+        <textarea id="source-input" class="code-area">{{source}}</textarea>
       </div>
       <div class="code output">
         <textarea id="script-output" class="code-area" readonly></textarea>
@@ -242,7 +245,7 @@
         prevNumLines = numLines
         let html = '';
         for (let i = 0; i < numLines; i++) {
-          html += `<div>${i + 1}</div>`;
+          html += '<div>' + (i + 1) + '</div>';
         }
         lineNumberDiv.innerHTML = html;
       }
@@ -258,7 +261,7 @@
         method: 'POST',
         redirect: 'follow',
       }
-      return fetch(`${API_URL}/${command}`, requestOptions)
+      return fetch(API_URL + '/' + command, requestOptions)
         .then(response => {
           target.value = '';
           return response.text();
@@ -266,19 +269,19 @@
     }
 
     function getExistingCode(id) {
-      return fetch(`${API_URL}/share?id=${id}`)
+      return fetch(API_URL + '/share?id=' + id)
         .then(response => {
-          if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+          if (!response.ok) throw new Error('Error' + response.status + ': ' + response.statusText);
           return response.text();
         })
     }
 
     function getShareId(code) {
-      return fetch(`${API_URL}/share`, {
+      return fetch(API_URL + '/share', {
         method: 'POST',
         body: code,
       }).then(response => {
-        if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+        if (!response.ok) throw new Error('Error' + response.status + ': ' + response.statusText);
         return response.text();
       })
     }
@@ -289,7 +292,7 @@
           source.value = result;
         })
         .catch(err => {
-          target.value = `Cannot format code:\n${err.message}`;
+          target.value = 'Cannot format code:\\n' + err.message;
         });
     }
 
@@ -299,12 +302,12 @@
       const shouldEnableTypescript = !!document.querySelector('#enable-typescript:checked');
       if (shouldEnableUnstable) queries.append('unstable', 1);
       if (shouldEnableTypescript) queries.append('ts', 1);
-      performInterpreterRequest(queries.toString() !== '' ? `eval?${queries.toString()}` : 'eval', source.value)
+      performInterpreterRequest(queries.toString() !== '' ? 'eval?' + queries.toString() : 'eval', source.value)
         .then(result => {
           target.value = result;
         })
         .catch(err => {
-          target.value = `Cannot run code:\n${err.message}`;
+          target.value = 'Cannot run code:\\n' + err.message;
         });
     }
 
@@ -321,11 +324,11 @@
           if (isUnstable) urlParams.append('unstable', 1);
           if (isTypescript) urlParams.append('ts', 1);
           urlParams.append('id', result);
-          shareTarget.value = `${document.location.origin}?${urlParams.toString()}`;
+          shareTarget.value = document.location.origin + '?' + urlParams.toString();
           shareTarget.select();
         })
         .catch(err => {
-          alert(`Cannot share code: ${err.message}`);
+          alert('Cannot share code: ' + err.message);
           shareTarget.value = '';
         })
     }
@@ -338,18 +341,6 @@
 
     if (isUnstable) document.getElementById('enable-unstable').checked = true;
     if (isTypescript) document.getElementById('enable-typescript').checked = true;
-
-    if (isLoadMode) {
-      const sourceId = urlParams.get('id');
-      source.value = `Fetching source id ${sourceId} ...`;
-      getExistingCode(sourceId)
-        .then(result => {
-          source.value = result;
-        }).catch(err => {
-          alert(`Cannot fetch source id ${sourceId}: ${err.message}`);
-          source.value = '';
-        });
-    }
 
     document.addEventListener('DOMContentLoaded', () => {
       editor = new Behave({
@@ -377,5 +368,7 @@
     });
   </script>
 </body>
-
 </html>
+`;
+
+export default template;
