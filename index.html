@@ -28,6 +28,7 @@
       flex: 1;
       display: flex;
       flex-direction: row;
+      margin: 0;
     }
 
     .code::before {
@@ -40,11 +41,10 @@
       color: red;
     }
 
-    .code-area {
+    .code-area, .code-ln {
       font-family: 'Inconsolata', monospace;
-      background-color: #ffffea;
+      background-color: #FCFDCE;
       height: 100%;
-      width: calc(100% - 32px);
       border: none;
       padding: 10px;
       line-height: 1.5;
@@ -60,9 +60,13 @@
       outline: none;
     }
 
+    .code-area#source-input {
+      background-color: #FFFFEA;
+      width: 100%;
+    }
+
     .code-area#script-output {
       width: 100%;
-      background-color: #FCFDCE;
     }
   </style>
 </head>
@@ -90,14 +94,18 @@
   <script src="https://cdn.jsdelivr.net/npm/behave-js@1.5.0/behave.min.js"></script>
   <script>
     let editor;
+    let prevNumLines;
     BehaveHooks.add(['keydown'], data => {
       const numLines = data.lines.total;
-      const house = document.getElementsByClassName('code-ln')[0];
-      let html = '';
-      for (let i = 0; i < numLines; i++) {
-        html += '<div>' + (i + 1) + '</div>';
+      if (prevNumLines !== numLines) {
+        prevNumLines = numLines
+        const house = document.getElementsByClassName('code-ln')[0];
+        let html = '';
+        for (let i = 0; i < numLines; i++) {
+          html += `<div>${i + 1}</div>`;
+        }
+        house.innerHTML = html;
       }
-      house.innerHTML = html;
     });
     document.addEventListener('DOMContentLoaded', () => {
       editor = new Behave({
