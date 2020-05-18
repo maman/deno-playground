@@ -53,11 +53,26 @@
       margin-left: 0;
     }
 
+    .menu-list>li:last-child {
+      margin-left: auto;
+    }
+
+    .menu-list>li a {
+      text-decoration: none;
+    }
+
+    .menu-list>li a:hover,
+    .menu-list>li a:active,
+    .menu-list>li a:focus {
+      text-decoration: underline;
+    }
+
     .menu-list>li label {
       display: flex;
       flex-direction: row;
       height: 100%;
       align-items: center;
+      cursor: pointer;
     }
 
     .menu-list>li label>* {
@@ -66,9 +81,16 @@
 
     .menu-list>li>button {
       border-radius: 4px;
-      background-color: rgba(137, 136, 204, .8);
+      background-color: rgba(137, 136, 204, 1);
       border: none;
-      color: #FFFFFF
+      color: #FFFFFF;
+      cursor: pointer;
+    }
+
+    .menu-list>li>button:hover,
+    .menu-list>li>button:active,
+    .menu-list>li>button:focus {
+      background-color: rgb(92, 91, 168);
     }
 
     .menu-list #share-text {
@@ -83,6 +105,7 @@
       flex: 2;
       display: flex;
       flex-direction: column;
+      max-height: calc(100vh - 53px);
     }
 
     .main>.code {
@@ -127,6 +150,8 @@
 
     .code-ln {
       color: #CCCC7D;
+      text-align: right;
+      overflow: hidden;
     }
 
     .code-area:focus {
@@ -179,6 +204,9 @@
             <span>Use typescript</span>
           </label>
         </li>
+        <li>
+          <a href="https://github.com/maman/deno-playground">GitHub</a>
+        </li>
       </ul>
     </div>
     <div class="main">
@@ -196,6 +224,7 @@
     let editor;
     let prevNumLines;
     const API_URL = '/api';
+    const lineNumberDiv = document.querySelector('.code-ln');
     const source = document.getElementById('source-input');
     const target = document.getElementById('script-output');
     const shareTarget = document.getElementById('share-text');
@@ -211,7 +240,6 @@
       const numLines = data.lines.total;
       if (prevNumLines !== numLines) {
         prevNumLines = numLines
-        const lineNumberDiv = document.getElementsByClassName('code-ln')[0];
         let html = '';
         for (let i = 0; i < numLines; i++) {
           html += `<div>${i + 1}</div>`;
@@ -233,7 +261,6 @@
       return fetch(`${API_URL}/${command}`, requestOptions)
         .then(response => {
           target.value = '';
-          if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
           return response.text();
         });
     }
@@ -303,6 +330,10 @@
         })
     }
 
+    function syncScroll(evt, target) {
+      target.scrollTop = evt.target.scrollTop;
+    }
+
     if (isUnstable) document.getElementById('enable-unstable').checked = true;
     if (isTypescript) document.getElementById('enable-typescript').checked = true;
 
@@ -329,6 +360,7 @@
         autoStrip: true,
         autoIndent: true,
       });
+      source.addEventListener('scroll', evt => { syncScroll(evt, lineNumberDiv) });
       evalBtn.addEventListener('click', () => { eval() });
       formatBtn.addEventListener('click', () => { format() });
       shareBtn.addEventListener('click', () => { share() });
@@ -336,6 +368,7 @@
 
     document.addEventListener('beforeunload', () => {
       editor && editor.close();
+      source.removeEventListener('scroll', evt => { syncScroll(evt, lineNumberDiv) });
       evalBtn.removeEventListener('click', () => { eval() });
       formatBtn.removeEventListener('click', () => { format() });
       shareBtn.removeEventListener('click', () => { share() });
