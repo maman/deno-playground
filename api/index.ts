@@ -1,8 +1,6 @@
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
-  dirname,
-  fromFileUrl,
 } from "../deps.ts";
 import template from "./_template.ts";
 import { getFromAPI } from "./share.ts";
