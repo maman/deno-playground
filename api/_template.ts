@@ -9,7 +9,8 @@ const template = `
   <title>Deno Playground</title>
   <meta name="description" content="Run code on deno typescript runtime">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-normalize@0.6.0/modern-normalize.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.53.2/lib/codemirror.min.css">
+  <link rel="stylesheet" href="https://fonts.xz.style/serve/jetbrains-mono.css"> 
   <style>
     html,
     body,
@@ -137,7 +138,7 @@ const template = `
 
     .code-area,
     .code-ln {
-      font-family: 'Inconsolata', monospace;
+      font-family: 'JetBrains Mono', monospace;
       background-color: #FCFDCE;
       height: 100%;
       border: none;
@@ -168,6 +169,83 @@ const template = `
 
     .code-area#script-output {
       width: 100%;
+    }
+
+    .CodeMirror {
+      width: 100%;
+      height: auto;
+    }
+
+    /** Plan9's Acme Editor theme for CodeMirror **/
+
+    .cm-s-plan9.CodeMirror {
+      background-color: #ffffea;
+      color: #202020;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.5 !important;
+      font-size: .9rem !important;
+    }
+    
+    .cm-s-plan9.CodeMirror .CodeMirror-gutters {
+      background-color: #FCFDCE;
+    }
+    
+    .cm-s-plan9.CodeMirror .CodeMirror-linenumber {
+      color: #505050;
+    }
+    
+    .cm-s-plan9 div.CodeMirror-selected,
+    .cm-s-plan9 .CodeMirror-line::selection,
+    .cm-s-plan9 .CodeMirror-line > span::selection,
+    .cm-s-plan9 .CodeMirror-line > span > span::selection,
+    .cm-s-plan9 .CodeMirror-line::-moz-selection,
+    .cm-s-plan9 .CodeMirror-line > span::-moz-selection,
+    .cm-s-plan9 .CodeMirror-line > span > span::-moz-selection {
+      background: rgba(175, 238, 238, 0.33);
+    }
+    
+    .cm-s-plan9 .CodeMirror-activeline:before,
+    .cm-s-plan9 .CodeMirror-activeline:after {
+      content: '';
+      position: absolute;
+      background-color: rgba(0, 0, 0, .15);
+      width: 100%;
+      height: 1px;
+      left: 0;
+      z-index: 1;
+    }
+    
+    .cm-s-plan9 .CodeMirror-activeline:before {
+      top: 0;
+    }
+    
+    .cm-s-plan9 .CodeMirror-activeline:after {
+      bottom: 0;
+    }
+    
+    .cm-s-plan9 .CodeMirror-activeline-background {
+      background-color: #FCFDCE;
+    }
+    
+    .cm-s-plan9 .CodeMirror-matchingbracket {
+      font-weight: bold;
+      color: inherit !important;
+    }
+    
+    .cm-s-plan9 .cm-comment {
+      color: rgba(0, 0, 0, .4);
+    }
+    
+    .cm-s-plan9 .cm-comment,
+    .cm-s-plan9 .cm-keyword {
+      font-style: italic;
+    }
+    
+    .cm-s-plan9 .cm-comment,
+    .cm-s-plan9 .cm-variable,
+    .cm-s-plan9 .cm-variable-2,
+    .cm-s-plan9 .cm-def {
+      font-weight: bold;
     }
   </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-166959783-1"></script>
@@ -214,7 +292,6 @@ const template = `
     </div>
     <div class="main">
       <div class="code">
-        <div class="code-ln"><span>1</span></div>
         <textarea id="source-input" class="code-area">{{source}}</textarea>
       </div>
       <div class="code output">
@@ -222,7 +299,12 @@ const template = `
       </div>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/behave-js@1.5.0/behave.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.53.2/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.53.2/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.53.2/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.53.2/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.53.2/addon/comment/comment.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.53.2/addon/selection/active-line.min.js"></script>
   <script>
     let editor;
     let prevNumLines;
@@ -238,18 +320,6 @@ const template = `
     const isTypescript = urlParams.has('ts');
     const isUnstable = urlParams.has('unstable');
     const isLoadMode = urlParams.has('id');
-
-    BehaveHooks.add(['keydown'], data => {
-      const numLines = data.lines.total;
-      if (prevNumLines !== numLines) {
-        prevNumLines = numLines
-        let html = '';
-        for (let i = 0; i < numLines; i++) {
-          html += '<div>' + (i + 1) + '</div>';
-        }
-        lineNumberDiv.innerHTML = html;
-      }
-    });
 
     function performInterpreterRequest(command, body) {
       target.value = 'Waiting for Remote server ...';
@@ -286,23 +356,23 @@ const template = `
       })
     }
 
-    function format() {
-      performInterpreterRequest('fmt', source.value)
+    function format(text) {
+      performInterpreterRequest('fmt', text)
         .then(result => {
-          source.value = result;
+          editor && editor.setValue(result);
         })
         .catch(err => {
           target.value = 'Cannot format code:\\n' + err.message;
         });
     }
 
-    function eval() {
+    function eval(text) {
       const queries = new URLSearchParams();
       const shouldEnableUnstable = !!document.querySelector('#enable-unstable:checked');
       const shouldEnableTypescript = !!document.querySelector('#enable-typescript:checked');
       if (shouldEnableUnstable) queries.append('unstable', 1);
       if (shouldEnableTypescript) queries.append('ts', 1);
-      performInterpreterRequest(queries.toString() !== '' ? 'eval?' + queries.toString() : 'eval', source.value)
+      performInterpreterRequest(queries.toString() !== '' ? 'eval?' + queries.toString() : 'eval', text)
         .then(result => {
           target.value = result;
         })
@@ -311,9 +381,9 @@ const template = `
         });
     }
 
-    function share() {
-      if (!source.value.trim().length) return;
-      getShareId(source.value)
+    function share(text) {
+      if (!text.trim().length) return;
+      getShareId(text)
         .then(result => {
           if (!shareTarget.classList.contains('show')) {
             shareTarget.classList.add('show');
@@ -333,38 +403,33 @@ const template = `
         })
     }
 
-    function syncScroll(evt, target) {
-      requestAnimationFrame(() => {
-        target.scrollTop = evt.target.scrollTop;
-      });
-    }
-
     if (isUnstable) document.getElementById('enable-unstable').checked = true;
     if (isTypescript) document.getElementById('enable-typescript').checked = true;
 
     document.addEventListener('DOMContentLoaded', () => {
-      editor = new Behave({
-        textarea: document.getElementById('source-input'),
-        replaceTab: true,
-        softTabs: false,
+      editor = CodeMirror.fromTextArea(source, {
+        lineNumbers: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        styleActiveLine: true,
+        mode: 'javascript',
+        inputStyle: 'contenteditable',
+        theme: 'plan9',
         tabSize: 2,
-        autoOpen: true,
-        overwrite: true,
-        autoStrip: true,
-        autoIndent: true,
+        extraKeys: {
+          'Ctrl-/': cm => { cm.toggleComment(); },
+          'Cmd-/': cm => { cm.toggleComment(); },
+        }
       });
-      source.addEventListener('scroll', evt => { syncScroll(evt, lineNumberDiv) });
-      evalBtn.addEventListener('click', () => { eval() });
-      formatBtn.addEventListener('click', () => { format() });
-      shareBtn.addEventListener('click', () => { share() });
+      evalBtn.addEventListener('click', () => { eval(editor.getValue()) });
+      formatBtn.addEventListener('click', () => { format(editor.getValue()) });
+      shareBtn.addEventListener('click', () => { share(editor.getValue()) });
     });
 
     document.addEventListener('beforeunload', () => {
-      editor && editor.close();
-      source.removeEventListener('scroll', evt => { syncScroll(evt, lineNumberDiv) });
-      evalBtn.removeEventListener('click', () => { eval() });
-      formatBtn.removeEventListener('click', () => { format() });
-      shareBtn.removeEventListener('click', () => { share() });
+      evalBtn.removeEventListener('click', () => { eval(editor.getValue()) });
+      formatBtn.removeEventListener('click', () => { format(editor.getValue()) });
+      shareBtn.removeEventListener('click', () => { share(editor.getValue()) });
     });
   </script>
 </body>
