@@ -459,8 +459,8 @@ const template = `
 
     function share(text) {
       if (!text.trim().length) return;
-      // getShareId(text)
-      //   .then(result => {
+      getShareId(text)
+        .then(result => {
           if (!shareTarget.classList.contains('show')) {
             shareTarget.classList.add('show');
           }
@@ -469,14 +469,14 @@ const template = `
           const isTypescript = !!document.querySelector('#enable-typescript:checked');
           if (isUnstable) urlParams.append('unstable', 1);
           if (isTypescript) urlParams.append('ts', 1);
-          // urlParams.append('id', result);
-          // shareTarget.value = document.location.origin + '?' + urlParams.toString();
-          // shareTarget.select();
-        // })
-        // .catch(err => {
-        //   alert('Cannot share code: ' + err.message);
-        //   shareTarget.value = '';
-        // })
+          urlParams.append('id', result);
+          shareTarget.value = document.location.origin + '?' + urlParams.toString();
+          shareTarget.select();
+        })
+        .catch(err => {
+          alert('Cannot share code: ' + err.message);
+          shareTarget.value = '';
+        })
     }
 
     if (isUnstable) document.getElementById('enable-unstable').checked = true;
