@@ -5,10 +5,11 @@ import {
   HmacSha256,
 } from "../deps.ts";
 
-const SHARE_SALT = Deno.env.get("SHARE_SALT") || "CAFEBABE";
-const JSONBIN_USER = Deno.env.get("JSONBIN_USER") || "";
-const JSONBIN_TOKEN = Deno.env.get("JSONBIN_TOKEN") || "";
-const JSONBIN_URL = `https://jsonbin.org/${JSONBIN_USER}`;
+import {
+  SHARE_SALT,
+  JSONBIN_URL,
+  JSONBIN_TOKEN,
+} from "../config.ts";
 
 function generateHash(body: string) {
   const h = new HmacSha256(SHARE_SALT);

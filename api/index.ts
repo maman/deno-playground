@@ -2,15 +2,17 @@ import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
 } from "../deps.ts";
-import template from "./_template.ts";
+import template from "../lib/template.ts";
 import { checkUid } from "./share.ts";
 
 export async function handler(
   { body: evtBody }: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
-  const { method, path, host } = JSON.parse(evtBody || "{}");
+  const { method, path } = JSON.parse(evtBody || "{}");
   if (method === "GET") {
     let templateText;
+    let loadedText =
+      `console.log(\`Hello from Deno:\${Deno.version.deno} 🦕\`);`;
     const [_, queryString] = path.split("?");
     const qs = new URLSearchParams(queryString || "");
     templateText = `${template}`;
@@ -21,11 +23,9 @@ export async function handler(
       ? templateText.replace("{{isTypescriptTemplateMark}}", "checked")
       : templateText.replace("{{isTypescriptTemplateMark}}", "");
     if (qs.has("id")) {
-      const loadedText = await checkUid(qs.get("id") || "");
-      templateText = templateText.replace("{{source}}", loadedText || "");
-    } else {
-      templateText = templateText.replace("{{source}}", "");
+      loadedText = await checkUid(qs.get("id") || "") || "";
     }
+    templateText = templateText.replace("{{source}}", loadedText);
     return {
       headers: {
         "Content-Type": "text/html",
