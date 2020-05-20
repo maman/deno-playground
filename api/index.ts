@@ -22,7 +22,7 @@ export async function handler(
       : templateText.replace("{{isTypescriptTemplateMark}}", "");
     if (qs.has("id")) {
       const loadedText = await checkUid(qs.get("id") || "");
-      templateText = templateText.replace("{{source}}", loadedText);
+      templateText = templateText.replace("{{source}}", loadedText || "");
     } else {
       templateText = templateText.replace("{{source}}", "");
     }
