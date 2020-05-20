@@ -3,36 +3,32 @@ import {
   APIGatewayProxyResult,
   Base64,
   shortUUID,
-  Fnv32a,
+  HmacSha256,
 } from "../deps.ts";
 
+const SHARE_SALT = Deno.env.get("SHARE_SALT") || "CAFEBABE";
 const JSONBIN_USER = Deno.env.get("JSONBIN_USER") || "";
 const JSONBIN_TOKEN = Deno.env.get("JSONBIN_TOKEN") || "";
 const JSONBIN_URL = `https://jsonbin.org/${JSONBIN_USER}`;
 
-function hasher(text: string): string {
-  const textUint8 = new TextEncoder().encode(text);
-  const hash = new Fnv32a().write(textUint8).sum();
-  return hash.toString();
+function generateHash(body: string) {
+  const h = new HmacSha256(SHARE_SALT);
+  const tempHash = Base64.fromString(h.hex()).toString();
+  let i = 11;
+
+  while (tempHash.slice(0, i).endsWith("_") && i < tempHash.length) {
+    i++;
+  }
+  return tempHash.slice(0, i);
 }
 
-async function checkHash(hash: string): Promise<string> {
+async function checkUid(hash: string): Promise<boolean> {
   return fetch(`${JSONBIN_URL}/${hash}`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Authorization': `token ${JSONBIN_TOKEN}`,
+      "Authorization": `token ${JSONBIN_TOKEN}`,
     },
-  }).then(result => result.ok ? result.text() : '');
-}
-
-async function storeHash(hash: string, id: string): Promise<string> {
-  return fetch(`${JSONBIN_URL}/${hash}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `token ${JSONBIN_TOKEN}`,
-    },
-    body: id,
-  }).then(result => result.ok ? id : '');
+  }).then((result) => result.ok);
 }
 
 export async function getFromAPI(id: string): Promise<string> {
@@ -50,13 +46,11 @@ export async function getFromAPI(id: string): Promise<string> {
     });
 }
 
-export async function storeToAPI(body: string) {
-  const hash = hasher(body.trim());
-  let valueRef = await checkHash(hash);
-  if (!valueRef) {
-    const uid = new shortUUID()(12);
-    valueRef = await storeHash(hash, uid);
-    return fetch(`${JSONBIN_URL}/${valueRef}`, {
+export async function storeToAPI(body: string): Promise<string> {
+  const hash = generateHash(body.trim());
+  const uid = await checkUid(hash);
+  if (!uid) {
+    return fetch(`${JSONBIN_URL}/${hash}`, {
       method: "POST",
       headers: {
         "Authorization": `token ${JSONBIN_TOKEN}`,
@@ -64,10 +58,10 @@ export async function storeToAPI(body: string) {
       body,
     }).then((result) => {
       if (!result.ok) throw new Error(`${result.status}: ${result.statusText}`);
-      return valueRef;
-    })
+      return hash;
+    });
   }
-  return Promise.resolve(valueRef);
+  return Promise.resolve(hash);
 }
 
 export async function handler(
