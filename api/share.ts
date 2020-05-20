@@ -2,45 +2,51 @@ import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
   Base64,
-  shortUUID,
+  HmacSha256,
 } from "../deps.ts";
 
-const SALT = Deno.env.get("a");
+const SHARE_SALT = Deno.env.get("SHARE_SALT") || "CAFEBABE";
 const JSONBIN_USER = Deno.env.get("JSONBIN_USER") || "";
 const JSONBIN_TOKEN = Deno.env.get("JSONBIN_TOKEN") || "";
 const JSONBIN_URL = `https://jsonbin.org/${JSONBIN_USER}`;
 
-// export function generateShareKey(): string {
+function generateHash(body: string) {
+  const h = new HmacSha256(SHARE_SALT);
+  h.update(body);
+  const tempHash = Base64.fromString(h.hex()).toString();
+  let i = 11;
 
-// }
+  while (tempHash.slice(0, i).endsWith("_") && i < tempHash.length) {
+    i++;
+  }
+  return tempHash.slice(0, i);
+}
 
-export async function getFromAPI(id: string): Promise<string> {
-  return fetch(`${JSONBIN_URL}/${id}`, {
+export async function checkUid(hash: string): Promise<string | null> {
+  return fetch(`${JSONBIN_URL}/${hash}`, {
     method: "GET",
     headers: {
       "Authorization": `token ${JSONBIN_TOKEN}`,
     },
-  })
-    .then((result) => {
-      if (!result.ok) {
-        throw new Error(`${result.status}: ${result.statusText}`);
-      }
-      return result.text();
-    });
+  }).then((result) => result.ok ? result.text() : null);
 }
 
-export async function storeToAPI(body: string): Promise<string> {
-  const uid = new shortUUID()(12);
-  return fetch(`${JSONBIN_URL}/${uid}`, {
-    method: "POST",
-    headers: {
-      "Authorization": `token ${JSONBIN_TOKEN}`,
-    },
-    body,
-  }).then((result) => {
-    if (!result.ok) throw new Error(`${result.status}: ${result.statusText}`);
-    return uid;
-  });
+export async function store(body: string): Promise<string> {
+  const hash = generateHash(body.trim());
+  const uid = await checkUid(hash);
+  if (!uid) {
+    return fetch(`${JSONBIN_URL}/${hash}`, {
+      method: "POST",
+      headers: {
+        "Authorization": `token ${JSONBIN_TOKEN}`,
+      },
+      body,
+    }).then((result) => {
+      if (!result.ok) throw new Error(`${result.status}: ${result.statusText}`);
+      return hash;
+    });
+  }
+  return Promise.resolve(hash);
 }
 
 export async function handler(
@@ -55,26 +61,10 @@ export async function handler(
   }
   if (method === "POST") {
     const source = Base64.fromBase64String(body).toString();
-    return storeToAPI(source)
+    return store(source)
       .then((uid) => ({
         statusCode: 200,
         body: uid,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return {
-          statusCode: 500,
-          body: err.message,
-        };
-      });
-  } else if (method === "GET") {
-    const [_, queryString] = path.split("?");
-    const qs = new URLSearchParams(queryString || "");
-    if (!qs.has("id")) return { statusCode: 500, body: "need id queryparam" };
-    return getFromAPI(qs.get("id") || "")
-      .then((body) => ({
-        statusCode: 200,
-        body,
       }))
       .catch((err) => {
         console.error(err);

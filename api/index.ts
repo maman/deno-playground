@@ -3,7 +3,7 @@ import {
   APIGatewayProxyResult,
 } from "../deps.ts";
 import template from "./_template.ts";
-import { getFromAPI } from "./share.ts";
+import { checkUid } from "./share.ts";
 
 export async function handler(
   { body: evtBody }: APIGatewayProxyEvent,
@@ -21,8 +21,8 @@ export async function handler(
       ? templateText.replace("{{isTypescriptTemplateMark}}", "checked")
       : templateText.replace("{{isTypescriptTemplateMark}}", "");
     if (qs.has("id")) {
-      const loadedText = await getFromAPI(qs.get("id") || "");
-      templateText = templateText.replace("{{source}}", loadedText);
+      const loadedText = await checkUid(qs.get("id") || "");
+      templateText = templateText.replace("{{source}}", loadedText || "");
     } else {
       templateText = templateText.replace("{{source}}", "");
     }
