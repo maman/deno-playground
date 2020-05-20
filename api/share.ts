@@ -13,6 +13,7 @@ const JSONBIN_URL = `https://jsonbin.org/${JSONBIN_USER}`;
 
 function generateHash(body: string) {
   const h = new HmacSha256(SHARE_SALT);
+  h.update(body);
   const tempHash = Base64.fromString(h.hex()).toString();
   let i = 11;
 
