@@ -35,8 +35,10 @@ const template = `
 
     .menu-list {
       margin: 0;
-      display: flex;
-      flex-direction: row;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      column-gap: 5px;
+      row-gap: 5px;
       align-items: center;
       padding: 5px;
       background-color: #EAFFFF;
@@ -45,7 +47,7 @@ const template = `
     }
 
     .menu-list>li {
-      margin-right: 5px;
+      height: 100%;
       list-style: none;
       text-align: center;
       position: relative;
@@ -57,6 +59,7 @@ const template = `
 
     .menu-list>li:last-child {
       margin-left: auto;
+      display: none;
     }
 
     .menu-list>li a {
@@ -74,6 +77,7 @@ const template = `
       flex-direction: row;
       height: 100%;
       align-items: center;
+      justify-content: center;
       cursor: pointer;
     }
 
@@ -82,11 +86,12 @@ const template = `
     }
 
     .menu-list>li>button {
-      border-radius: 4px;
       background-color: rgba(137, 136, 204, 1);
       border: none;
       color: #FFFFFF;
       cursor: pointer;
+      padding: 5px;
+      width: 100%;
     }
 
     .menu-list>li>button:hover,
@@ -97,10 +102,55 @@ const template = `
 
     .menu-list #share-text {
       display: none;
+      width: 100%;
+      border: 1px solid #0A0A0A
     }
 
     .menu-list #share-text.show {
       display: inline-block;
+    }
+
+    .menu-list>li label input[type=checkbox] {
+      
+    }
+
+    .menu-list>li label span {
+      font-size: .7rem;
+      text-align: left;
+    }
+
+    .menu-list>li.run {
+      grid-column-start: 1;
+      grid-column-end: 3;
+    }
+
+    .menu-list>li.format {
+      grid-column-start: 3;
+      grid-column-end: 5;
+    }
+
+    .menu-list>li.share {
+      grid-column-start: 5;
+      grid-column-end: 7;
+    }
+
+    .menu-list>li.shareText {
+      grid-column-start: 1;
+      grid-column-end: 7;
+    }
+
+    .menu-list>li.unstable {
+      grid-column-start: 1;
+      grid-column-end: 4;
+    }
+
+    .menu-list>li.typescript {
+      grid-column-start: 4;
+      grid-column-end: 7;
+    }
+
+    .menu-list>li.github {
+      display: none;
     }
 
     .main {
@@ -122,18 +172,6 @@ const template = `
 
     .main>.code:last-of-type {
       border: none;
-    }
-
-    @media screen and (min-width: 1023px) {
-      .main {
-        flex-direction: row;
-      }
-
-      .main>.code {
-        border-right: 1px solid rgba(0, 0, 0, .3);
-        border-bottom: none;
-        max-height: 100%;
-      }
     }
 
     .code-area,
@@ -174,6 +212,42 @@ const template = `
     .CodeMirror {
       width: 100%;
       height: auto;
+    }
+
+    /** Responsive config **/
+
+    @media screen and (min-width: 1023px) {
+      .menu-list {
+        display: flex;
+      }
+
+      .menu-list>li {
+        margin-right: 5px;
+      }
+
+      .menu-list>li>button {
+        border-radius: 4px;
+        padding: 1px 7px 2px;
+      }
+
+      .menu-list>li label span {
+        font-size: 1rem;
+      }
+
+      .menu-list>li.github {
+        display: block;
+      }
+
+      .main {
+        flex-direction: row;
+      }
+
+      .main>.code {
+        border-right: 1px solid rgba(0, 0, 0, .3);
+        border-bottom: none;
+        max-height: 100%;
+        max-width: 50%;
+      }
     }
 
     /** Plan9's Acme Editor theme for CodeMirror **/
@@ -263,29 +337,31 @@ const template = `
     <div class="header">
       <h1>Deno Playground</h1>
       <ul class="menu-list">
-        <li>
+        <li class="run">
           <button id="eval">Run</button>
         </li>
-        <li>
+        <li class="format">
           <button id="format">Format</button>
         </li>
-        <li>
+        <li class="share">
           <button id="share">Share</button>
+        </li>
+        <li class="shareText">
           <input type="text" id="share-text" value="">
         </li>
-        <li>
+        <li class="unstable">
           <label for="enable-unstable">
             <input type="checkbox" id="enable-unstable" name="enableUnstable" {{isUnstableTemplateMark}}>
             <span>Use unstable features</span>
           </label>
         </li>
-        <li>
+        <li class="typescript">
           <label for="enable-typescript">
             <input type="checkbox" id="enable-typescript" name="enableTypescript" {{isTypescriptTemplateMark}}>
             <span>Use typescript</span>
           </label>
         </li>
-        <li>
+        <li class="github">
           <a href="https://github.com/maman/deno-playground">GitHub</a>
         </li>
       </ul>
@@ -383,8 +459,8 @@ const template = `
 
     function share(text) {
       if (!text.trim().length) return;
-      getShareId(text)
-        .then(result => {
+      // getShareId(text)
+      //   .then(result => {
           if (!shareTarget.classList.contains('show')) {
             shareTarget.classList.add('show');
           }
@@ -393,14 +469,14 @@ const template = `
           const isTypescript = !!document.querySelector('#enable-typescript:checked');
           if (isUnstable) urlParams.append('unstable', 1);
           if (isTypescript) urlParams.append('ts', 1);
-          urlParams.append('id', result);
-          shareTarget.value = document.location.origin + '?' + urlParams.toString();
-          shareTarget.select();
-        })
-        .catch(err => {
-          alert('Cannot share code: ' + err.message);
-          shareTarget.value = '';
-        })
+          // urlParams.append('id', result);
+          // shareTarget.value = document.location.origin + '?' + urlParams.toString();
+          // shareTarget.select();
+        // })
+        // .catch(err => {
+        //   alert('Cannot share code: ' + err.message);
+        //   shareTarget.value = '';
+        // })
     }
 
     if (isUnstable) document.getElementById('enable-unstable').checked = true;
