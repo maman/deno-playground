@@ -3,16 +3,37 @@ import {
   APIGatewayProxyResult,
   Base64,
   shortUUID,
+  Fnv32a,
 } from "../deps.ts";
 
-const SALT = Deno.env.get("a");
 const JSONBIN_USER = Deno.env.get("JSONBIN_USER") || "";
 const JSONBIN_TOKEN = Deno.env.get("JSONBIN_TOKEN") || "";
 const JSONBIN_URL = `https://jsonbin.org/${JSONBIN_USER}`;
 
-// export function generateShareKey(): string {
+function hasher(text: string): string {
+  const textUint8 = new TextEncoder().encode(text);
+  const hash = new Fnv32a().write(textUint8).sum();
+  return hash.toString();
+}
 
-// }
+async function checkHash(hash: string): Promise<string> {
+  return fetch(`${JSONBIN_URL}/${hash}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `token ${JSONBIN_TOKEN}`,
+    },
+  }).then(result => result.ok ? result.text() : '');
+}
+
+async function storeHash(hash: string, id: string): Promise<string> {
+  return fetch(`${JSONBIN_URL}/${hash}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `token ${JSONBIN_TOKEN}`,
+    },
+    body: id,
+  }).then(result => result.ok ? id : '');
+}
 
 export async function getFromAPI(id: string): Promise<string> {
   return fetch(`${JSONBIN_URL}/${id}`, {
@@ -29,18 +50,24 @@ export async function getFromAPI(id: string): Promise<string> {
     });
 }
 
-export async function storeToAPI(body: string): Promise<string> {
-  const uid = new shortUUID()(12);
-  return fetch(`${JSONBIN_URL}/${uid}`, {
-    method: "POST",
-    headers: {
-      "Authorization": `token ${JSONBIN_TOKEN}`,
-    },
-    body,
-  }).then((result) => {
-    if (!result.ok) throw new Error(`${result.status}: ${result.statusText}`);
-    return uid;
-  });
+export async function storeToAPI(body: string) {
+  const hash = hasher(body.trim());
+  let valueRef = await checkHash(hash);
+  if (!valueRef) {
+    const uid = new shortUUID()(12);
+    valueRef = await storeHash(hash, uid);
+    return fetch(`${JSONBIN_URL}/${valueRef}`, {
+      method: "POST",
+      headers: {
+        "Authorization": `token ${JSONBIN_TOKEN}`,
+      },
+      body,
+    }).then((result) => {
+      if (!result.ok) throw new Error(`${result.status}: ${result.statusText}`);
+      return valueRef;
+    })
+  }
+  return Promise.resolve(valueRef);
 }
 
 export async function handler(
