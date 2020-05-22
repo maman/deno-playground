@@ -10,8 +10,43 @@ const template = `
   <meta name="description" content="Run code on deno typescript runtime">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-normalize@0.6.0/modern-normalize.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.53.2/lib/codemirror.min.css">
-  <link rel="stylesheet" href="https://fonts.xz.style/serve/jetbrains-mono.css"> 
   <style>
+    @font-face {
+      font-family: 'Iosevka';
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: normal;
+      src: url('/iosevka-term-ss08-regular.woff2?v=3.0.0') format('woff2'),
+          url('/iosevka-term-ss08-regular.woff?v=3.0.0') format('woff');
+    }
+
+    @font-face {
+      font-family: 'Iosevka';
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: italic;
+      src: url('/iosevka-term-ss08-italic.woff2?v=3.0.0') format('woff2'),
+          url('/iosevka-term-ss08-italic.woff?v=3.0.0') format('woff');
+    }
+
+    @font-face {
+      font-family: 'Iosevka';
+      font-weight: bold;
+      font-stretch: normal;
+      font-style: normal;
+      src: url('/iosevka-term-ss08-semibold.woff2?v=3.0.0') format('woff2'),
+          url('/iosevka-term-ss08-semibold.woff?v=3.0.0') format('woff');
+    }
+
+    @font-face {
+      font-family: 'Iosevka';
+      font-weight: bold;
+      font-stretch: normal;
+      font-style: italic;
+      src: url('/iosevka-term-ss08-semibolditalic.woff2?v=3.0.0') format('woff2'),
+          url('/iosevka-term-ss08-semibolditalic.woff?v=3.0.0') format('woff');
+    }
+
     html,
     body,
     .wrapper {
@@ -110,10 +145,6 @@ const template = `
       display: inline-block;
     }
 
-    .menu-list>li label input[type=checkbox] {
-      
-    }
-
     .menu-list>li label span {
       font-size: .7rem;
       text-align: left;
@@ -176,18 +207,18 @@ const template = `
 
     .code-area,
     .code-ln {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Iosevka', monospace;
       background-color: #FCFDCE;
       height: 100%;
       border: none;
-      padding: 10px;
+      padding: 5px 10px;
       line-height: 1.5;
       resize: none;
       overflow-wrap: normal;
       overflow-x: auto;
       word-wrap: normal;
       white-space: pre;
-      font-size: 16px;
+      font-size: 0.9rem;
     }
 
     .code-ln {
@@ -255,13 +286,13 @@ const template = `
     .cm-s-plan9.CodeMirror {
       background-color: #ffffea;
       color: #202020;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Iosevka', monospace;
       line-height: 1.5 !important;
       font-size: .9rem !important;
     }
     
     .cm-s-plan9.CodeMirror .CodeMirror-gutters {
-      background-color: #FCFDCE;
+      background-color: #EAEAEA;
     }
     
     .cm-s-plan9.CodeMirror .CodeMirror-linenumber {
@@ -298,16 +329,24 @@ const template = `
     }
     
     .cm-s-plan9 .CodeMirror-activeline-background {
-      background-color: #FCFDCE;
+      background-color: #EEECCC;
     }
     
     .cm-s-plan9 .CodeMirror-matchingbracket {
       font-weight: bold;
-      color: inherit !important;
+      color: #9967CF !important;
+    }
+
+    .cm-s-plan9 .cm-string {
+      color: #005500;
+    }
+
+    .cm-s-plan9 .cm-type {
+      color: #004488;
     }
     
     .cm-s-plan9 .cm-comment {
-      color: rgba(0, 0, 0, .4);
+      color: #663311;
     }
     
     .cm-s-plan9 .cm-comment,
@@ -392,10 +431,6 @@ const template = `
     const evalBtn = document.getElementById('eval');
     const formatBtn = document.getElementById('format');
     const shareBtn = document.getElementById('share');
-    const urlParams = new URLSearchParams(window.location.search);
-    const isTypescript = urlParams.has('ts');
-    const isUnstable = urlParams.has('unstable');
-    const isLoadMode = urlParams.has('id');
 
     function performInterpreterRequest(command, body) {
       target.value = 'Waiting for Remote server ...';
@@ -468,7 +503,7 @@ const template = `
           const isUnstable = !!document.querySelector('#enable-unstable:checked');
           const isTypescript = !!document.querySelector('#enable-typescript:checked');
           if (isUnstable) urlParams.append('unstable', 1);
-          if (isTypescript) urlParams.append('ts', 1);
+          if (!isTypescript) urlParams.append('ts', 0);
           urlParams.append('id', result);
           shareTarget.value = document.location.origin + '?' + urlParams.toString();
           shareTarget.select();
@@ -479,28 +514,23 @@ const template = `
         })
     }
 
-    if (isUnstable) document.getElementById('enable-unstable').checked = true;
-    if (isTypescript) document.getElementById('enable-typescript').checked = true;
-
-    document.addEventListener('DOMContentLoaded', () => {
-      editor = CodeMirror.fromTextArea(source, {
-        lineNumbers: true,
-        matchBrackets: true,
-        autoCloseBrackets: true,
-        styleActiveLine: true,
-        mode: 'javascript',
-        inputStyle: 'contenteditable',
-        theme: 'plan9',
-        tabSize: 2,
-        extraKeys: {
-          'Ctrl-/': cm => { cm.toggleComment(); },
-          'Cmd-/': cm => { cm.toggleComment(); },
-        }
-      });
-      evalBtn.addEventListener('click', () => { eval(editor.getValue()) });
-      formatBtn.addEventListener('click', () => { format(editor.getValue()) });
-      shareBtn.addEventListener('click', () => { share(editor.getValue()) });
+    editor = CodeMirror.fromTextArea(source, {
+      lineNumbers: true,
+      matchBrackets: true,
+      autoCloseBrackets: true,
+      styleActiveLine: true,
+      mode: 'text/typescript',
+      inputStyle: 'contenteditable',
+      theme: 'plan9',
+      tabSize: 2,
+      extraKeys: {
+        'Ctrl-/': cm => { cm.toggleComment(); },
+        'Cmd-/': cm => { cm.toggleComment(); },
+      }
     });
+    evalBtn.addEventListener('click', () => { eval(editor.getValue()) });
+    formatBtn.addEventListener('click', () => { format(editor.getValue()) });
+    shareBtn.addEventListener('click', () => { share(editor.getValue()) });
 
     document.addEventListener('beforeunload', () => {
       evalBtn.removeEventListener('click', () => { eval(editor.getValue()) });

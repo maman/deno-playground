@@ -15,15 +15,18 @@ export async function handler(
       `console.log(\`Hello from Deno:\${Deno.version.deno} 🦕\`);`;
     const [_, queryString] = path.split("?");
     const qs = new URLSearchParams(queryString || "");
+    const isUnstable = qs.get("unstable") === "1";
+    const isNotTypescript = qs.get("ts") === "0";
+    const idToLoadFrom = qs.get("id");
     templateText = `${template}`;
-    templateText = (qs.has("unstable"))
+    templateText = (isUnstable)
       ? templateText.replace("{{isUnstableTemplateMark}}", "checked")
       : templateText.replace("{{isUnstableTemplateMark}}", "");
-    templateText = (qs.has("ts"))
-      ? templateText.replace("{{isTypescriptTemplateMark}}", "checked")
-      : templateText.replace("{{isTypescriptTemplateMark}}", "");
-    if (qs.has("id")) {
-      loadedText = await checkUid(qs.get("id") || "") || "";
+    templateText = (isNotTypescript)
+      ? templateText.replace("{{isTypescriptTemplateMark}}", "")
+      : templateText.replace("{{isTypescriptTemplateMark}}", "checked");
+    if (idToLoadFrom) {
+      loadedText = await checkUid(idToLoadFrom) || "";
     }
     templateText = templateText.replace("{{source}}", loadedText);
     return {
