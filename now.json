@@ -2,33 +2,13 @@
   "functions": {
     "api/**/*.ts": {
       "runtime": "now-deno@0.4.0",
-      "memory": 1024
+      "memory": 2048
     }
   },
   "rewrites": [
     {
       "source": "/",
       "destination": "/api"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/font",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
-    },
-    {
-      "source": "/favicon.svg",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
     }
   ],
   "env": {
