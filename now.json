@@ -5,6 +5,12 @@
       "memory": 1024
     }
   },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api"
+    }
+  ],
   "env": {
     "DENO_VERSION": "latest"
   },
@@ -13,11 +19,5 @@
       "DENO_UNSTABLE": "true"
     }
   },
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/api"
-    }
-  ],
   "regions": ["sin1"]
 }
