@@ -2,7 +2,7 @@
   "functions": {
     "api/**/*.ts": {
       "runtime": "now-deno@0.4.0",
-      "memory": 2048
+      "memory": 1024
     }
   },
   "rewrites": [
