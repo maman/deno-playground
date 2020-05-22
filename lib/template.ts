@@ -16,8 +16,8 @@ const template = `
       font-weight: normal;
       font-stretch: normal;
       font-style: normal;
-      src: url('/iosevka-term-ss08-regular.woff2?v=3.0.0') format('woff2'),
-          url('/iosevka-term-ss08-regular.woff?v=3.0.0') format('woff');
+      src: url('/font/iosevka-term-ss08-regular.woff2?v=3.0.0') format('woff2'),
+          url('/font/iosevka-term-ss08-regular.woff?v=3.0.0') format('woff');
     }
 
     @font-face {
@@ -25,8 +25,8 @@ const template = `
       font-weight: normal;
       font-stretch: normal;
       font-style: italic;
-      src: url('/iosevka-term-ss08-italic.woff2?v=3.0.0') format('woff2'),
-          url('/iosevka-term-ss08-italic.woff?v=3.0.0') format('woff');
+      src: url('/font/iosevka-term-ss08-italic.woff2?v=3.0.0') format('woff2'),
+          url('/font/iosevka-term-ss08-italic.woff?v=3.0.0') format('woff');
     }
 
     @font-face {
@@ -34,8 +34,8 @@ const template = `
       font-weight: bold;
       font-stretch: normal;
       font-style: normal;
-      src: url('/iosevka-term-ss08-semibold.woff2?v=3.0.0') format('woff2'),
-          url('/iosevka-term-ss08-semibold.woff?v=3.0.0') format('woff');
+      src: url('/font/iosevka-term-ss08-semibold.woff2?v=3.0.0') format('woff2'),
+          url('/font/iosevka-term-ss08-semibold.woff?v=3.0.0') format('woff');
     }
 
     @font-face {
@@ -43,8 +43,8 @@ const template = `
       font-weight: bold;
       font-stretch: normal;
       font-style: italic;
-      src: url('/iosevka-term-ss08-semibolditalic.woff2?v=3.0.0') format('woff2'),
-          url('/iosevka-term-ss08-semibolditalic.woff?v=3.0.0') format('woff');
+      src: url('/font/iosevka-term-ss08-semibolditalic.woff2?v=3.0.0') format('woff2'),
+          url('/font/iosevka-term-ss08-semibolditalic.woff?v=3.0.0') format('woff');
     }
 
     html,
@@ -401,7 +401,7 @@ const template = `
           </label>
         </li>
         <li class="github">
-          <a href="https://github.com/maman/deno-playground">GitHub</a>
+          <a href="https://github.com/maman/deno-playground" target="_blank">GitHub</a>
         </li>
       </ul>
     </div>

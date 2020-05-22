@@ -32,6 +32,11 @@ export async function handler(
     return {
       headers: {
         "Content-Type": "text/html",
+        "X-Frame-Options": "DENY",
+        "X-Download-Options": "noopen",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
+        "Strict-Transport-Security": "max-age=5184000",
       },
       statusCode: 200,
       body: templateText,

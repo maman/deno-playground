@@ -5,6 +5,32 @@
       "memory": 1024
     }
   },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/font",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "source": "/favicon.svg",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        }
+      ]
+    }
+  ],
   "env": {
     "DENO_VERSION": "latest"
   },
@@ -13,11 +39,5 @@
       "DENO_UNSTABLE": "true"
     }
   },
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/api"
-    }
-  ],
   "regions": ["sin1"]
 }
