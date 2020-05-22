@@ -532,10 +532,6 @@ const template = `
     formatBtn.addEventListener('click', () => { format(editor.getValue()) });
     shareBtn.addEventListener('click', () => { share(editor.getValue()) });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      
-    });
-
     document.addEventListener('beforeunload', () => {
       evalBtn.removeEventListener('click', () => { eval(editor.getValue()) });
       formatBtn.removeEventListener('click', () => { format(editor.getValue()) });
