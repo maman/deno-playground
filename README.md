@@ -44,3 +44,5 @@ $ npx vercel dev
 ```
 $ npx vercel
 ```
+
+# That's it!
