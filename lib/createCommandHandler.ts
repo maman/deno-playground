@@ -17,14 +17,21 @@ type SupportedDenoSubCommand = "eval" | "fmt";
 export default function createCommandHandler(
   commandType: SupportedDenoSubCommand,
 ) {
-  return async function handler(
-    { body: evtBody }: APIGatewayProxyEvent,
-  ): Promise<APIGatewayProxyResult> {
+  return async function handler({
+    body: evtBody,
+  }: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
     const { method, body, path } = JSON.parse(evtBody || "{}");
     if (method !== "POST") return { statusCode: 500, body: "Not supported" };
     const [_, queryString] = path.split("?");
     const qs = new URLSearchParams(queryString || "");
     const source = Base64.fromBase64String(body).toString();
+    // Prevent env leak
+    if (source.includes("Deno.env")) {
+      return {
+        statusCode: 500,
+        body: "Cannot execute Deno.env",
+      };
+    }
     const cmd = ["deno", commandType];
     if (commandType === "fmt") {
       cmd.push("-");
