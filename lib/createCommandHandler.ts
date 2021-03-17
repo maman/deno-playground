@@ -14,6 +14,8 @@ const beforeTimeout = (promise: Promise<any>, timeout: number = 0) => {
 
 type SupportedDenoSubCommand = "eval" | "fmt";
 
+const BLACKLISTED_API = ["Deno.run", "Deno.env"];
+
 export default function createCommandHandler(
   commandType: SupportedDenoSubCommand,
 ) {
@@ -25,11 +27,11 @@ export default function createCommandHandler(
     const [_, queryString] = path.split("?");
     const qs = new URLSearchParams(queryString || "");
     const source = Base64.fromBase64String(body).toString();
-    // Prevent env leak
-    if (source.includes("Deno.env")) {
+    // Blacklist some deno APIs
+    if (BLACKLISTED_API.some((api) => source.includes(api))) {
       return {
         statusCode: 500,
-        body: "Cannot execute Deno.env",
+        body: "Blacklisted APIs: ['Deno.env', 'Deno.run']",
       };
     }
     const cmd = ["deno", commandType];
