@@ -4,5 +4,5 @@ import createCommandHandler from "../lib/createCommandHandler.ts";
 export async function handler(
   evt: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
-  return createCommandHandler("eval")(evt);
+  return createCommandHandler("run")(evt);
 }
