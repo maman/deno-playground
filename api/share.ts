@@ -5,11 +5,7 @@ import {
   HmacSha256,
 } from "../deps.ts";
 
-import {
-  SHARE_SALT,
-  JSONBIN_URL,
-  JSONBIN_TOKEN,
-} from "../config.ts";
+import { JSONBIN_TOKEN, JSONBIN_URL, SHARE_SALT } from "../config.ts";
 
 function generateHash(body: string) {
   const h = new HmacSha256(SHARE_SALT);

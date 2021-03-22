@@ -1,7 +1,4 @@
-import {
-  APIGatewayProxyEvent,
-  APIGatewayProxyResult,
-} from "../deps.ts";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "../deps.ts";
 import template from "../lib/template.ts";
 import { checkUid } from "./share.ts";
 
